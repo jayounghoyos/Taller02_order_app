@@ -1,0 +1,42 @@
+name: CI-Pipeline
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install pytest sqlalchemy requests flask
+
+      - name: Lint (pylint)
+        run: pip install pylint && pylint **/*.py || true
+
+      # Test unitario con API real
+      - name: Test unitario con API real
+        run: pytest test_unit_real_api.py -v
+
+      # Test de integración con API real
+      - name: Test de integración con API real
+        run: pytest test_integration_real_api.py -v
+
+      # Test unitario con Stub (sin red)
+      - name: Test unitario con Stub
+        run: pytest test_unit_with_stub.py -v
+
+      # Test de integración con Fake (sin red)
+      - name: Test de integración con Fake
+        run: pytest test_integration_with_fake.py -v
